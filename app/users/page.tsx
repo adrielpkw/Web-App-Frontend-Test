@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const USERS_KEY = 'userList';
 
@@ -46,16 +47,17 @@ export default function UsersPage() {
     updateStorage(updated);
   };
 
-  const logout = () => {
+  const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
-    router.push('/login');
+    router.replace('/login');
   };
 
   return (
+    <ProtectedRoute>
     <main className="p-8 max-w-md mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">User Management</h1>
-        <button onClick={logout} className="text-red-500">Logout</button>
+        <button onClick={handleLogout} className="text-red-500">Logout</button>
       </div>
 
       <div className="flex mb-4">
@@ -79,5 +81,7 @@ export default function UsersPage() {
         ))}
       </ul>
     </main>
+    </ProtectedRoute>
+
   );
 }
