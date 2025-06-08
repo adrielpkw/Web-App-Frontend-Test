@@ -1,59 +1,83 @@
 'use client';
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+const USERS_KEY = 'userList';
 
 export default function UsersPage() {
-  const [users, setUsers] = useState([
-    { id: 1, name: 'John Doe', email: 'john@example.com' },
-  ]);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [users, setUsers] = useState<string[]>([]);
+  const [newUser, setNewUser] = useState('');
+  const router = useRouter();
 
-  const addUser = () => {
-    const newUser = { id: Date.now(), name, email };
-    setUsers([...users, newUser]);
-    setName('');
-    setEmail('');
+  // Check auth and load users from localStorage
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoggedIn) {
+      router.push('/login');
+      return;
+    }
+
+    const storedUsers = localStorage.getItem(USERS_KEY);
+    if (storedUsers) {
+      setUsers(JSON.parse(storedUsers));
+    } else {
+      const defaultUsers = ['Alice', 'Bob'];
+      setUsers(defaultUsers);
+      localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
+    }
+  }, []);
+
+  const updateStorage = (updatedUsers: string[]) => {
+    setUsers(updatedUsers);
+    localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
   };
 
-  const deleteUser = (id: number) => {
-    setUsers(users.filter((user) => user.id !== id));
+  const addUser = () => {
+    if (newUser.trim()) {
+      const updated = [...users, newUser];
+      updateStorage(updated);
+      setNewUser('');
+    }
+  };
+
+  const removeUser = (index: number) => {
+    const updated = users.filter((_, i) => i !== index);
+    updateStorage(updated);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('isLoggedIn');
+    router.push('/login');
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h2 className="text-2xl mb-4">Users</h2>
-      <div className="mb-4">
+    <main className="p-8 max-w-md mx-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">User Management</h1>
+        <button onClick={logout} className="text-red-500">Logout</button>
+      </div>
+
+      <div className="flex mb-4">
         <input
-          className="border p-2 mr-2"
-          value={name}
-          placeholder="Name"
-          onChange={(e) => setName(e.target.value)}
+          className="border p-2 w-full"
+          placeholder="New user name"
+          value={newUser}
+          onChange={(e) => setNewUser(e.target.value)}
         />
-        <input
-          className="border p-2 mr-2"
-          value={email}
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <button className="bg-green-500 text-white p-2" onClick={addUser}>
-          Add User
+        <button onClick={addUser} className="ml-2 px-4 py-2 bg-green-600 text-white rounded">
+          Add
         </button>
       </div>
+
       <ul>
-        {users.map((user) => (
-          <li key={user.id} className="border p-2 mb-2 flex justify-between">
-            <span>
-              {user.name} ({user.email})
-            </span>
-            <button
-              className="text-red-500"
-              onClick={() => deleteUser(user.id)}
-            >
-              Delete
-            </button>
+        {users.map((user, i) => (
+          <li key={i} className="flex justify-between items-center border-b py-2">
+            <span>{user}</span>
+            <button onClick={() => removeUser(i)} className="text-red-500">Delete</button>
           </li>
         ))}
       </ul>
-    </div>
+    </main>
   );
 }

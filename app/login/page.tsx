@@ -1,38 +1,44 @@
 'use client';
+
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
-  const handleLogin = async () => {
-    console.log({ email, password });
-    // Simulate login logic
+  const handleLogin = () => {
+    if (username === 'admin' && password === 'admin') {
+      localStorage.setItem('isLoggedIn', 'true');
+      router.push('/users'); // Redirect to users page
+    } else {
+      alert('Invalid credentials');
+    }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded">
-      <h1 className="text-xl mb-4">Login</h1>
+    <main className="p-8 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Login</h1>
       <input
-        type="email"
-        placeholder="Email"
         className="border p-2 w-full mb-2"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
       />
       <input
-        type="password"
+        className="border p-2 w-full mb-4"
         placeholder="Password"
-        className="border p-2 w-full mb-2"
+        type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
       <button
+        className="bg-blue-600 text-white px-4 py-2 rounded"
         onClick={handleLogin}
-        className="bg-blue-500 text-white p-2 w-full"
       >
         Login
       </button>
-    </div>
+    </main>
   );
 }
